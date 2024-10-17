@@ -14,7 +14,7 @@ NOTE: At the time of writing this, you may experience package conflicts with Pay
 
 ```js
 import type { CollectionConfig } from 'payload'
-import ColorSwatchField from '@/fields/ColorSwatch'
+import ColorSwatchField from '@modernaut/payload-color-swatch-field'
 
 const Lorem: CollectionConfig = {
   slug: 'lorem',
@@ -27,14 +27,7 @@ const Lorem: CollectionConfig = {
       type: 'text',
       required: true,
     },
-    ColorSwatchField({
-			name: 'color',
-			type: 'text',
-			required: false,
-			admin: {
-				position: 'sidebar',
-			},
-		}),
+    colorSwatchField,
   ],
 }
 
