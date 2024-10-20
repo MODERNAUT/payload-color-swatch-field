@@ -24,24 +24,20 @@
     "url": "https://github.com/MODERNAUT/payload-color-swatch-field/issues"
   },
   "homepage": "https://github.com/MODERNAUT/payload-color-swatch-field#readme",
-  "peerDependencies": {
-    "@payloadcms/ui": "beta",
-    "next": "15.0.0-canary.173",
-    "payload": "beta",
-    "react": "19.0.0-rc-3edc000d-20240926",
-    "react-dom": "19.0.0-rc-3edc000d-20240926"
+  "dependencies": {
+    "@payloadcms/translations": "3.0.0-beta.115",
+    "@payloadcms/ui": "3.0.0-beta.115"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^13.1.6",
-    "@payloadcms/eslint-config": "^1.1.1",
-    "@types/node": "22.5.4",
     "@types/react": "npm:types-react@19.0.0-rc.1",
     "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
-    "copyfiles": "^2.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "15.0.0-canary.173",
-    "postcss": "^8.4.38",
-    "prettier": "^3.0.3",
-    "typescript": "5.6.2"
+    "@payloadcms/eslint-config": "3.0.0-beta.112",
+    "payload": "3.0.0-beta.115",
+    "@payloadcms/next": "3.0.0-beta.115"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0 || ^19.0.0-rc-3edc000d-20240926",
+    "react-dom": "^19.0.0 || ^19.0.0-rc-3edc000d-20240926",
+    "payload": "3.0.0-beta.115"
   }
 }
