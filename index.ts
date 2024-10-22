@@ -4,7 +4,7 @@ export const colorSwatchField = (overrides = {}) => {
     name: "color",
     type: "text",
     index: true,
-    label: "Color Swatch",
+    label: "Color",
     required: false,
     validate: (value) =>
       value == null ||
