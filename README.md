@@ -13,7 +13,7 @@ NOTE: At the time of writing this, you may experience package conflicts with Pay
 ## Usage
 
 ```js
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, UIField } from 'payload'
 import ColorSwatchField from '@modernaut/payload-color-swatch-field'
 
 const Lorem: CollectionConfig = {
@@ -27,7 +27,12 @@ const Lorem: CollectionConfig = {
       type: 'text',
       required: true,
     },
-    colorSwatchField,
+    colorSwatchField({
+      label: 'dolor',
+      admin: {
+        // ...
+      },
+    }) as UIField,
   ],
 }
 
