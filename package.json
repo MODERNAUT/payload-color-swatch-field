@@ -1,6 +1,6 @@
 {
   "name": "@modernaut/payload-color-swatch-field",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A color swatch field for Payload 3",
   "main": "index.ts",
   "scripts": {
