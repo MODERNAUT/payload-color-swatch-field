@@ -1,12 +1,6 @@
-import type { TextField } from "payload";
-
-type ColorSwatchFieldType = (overrides?: Partial<TextField>) => TextField;
-
 // TO DO: Add Cell support for column sorting by color
-export const colorSwatchField: ColorSwatchFieldType = (overrides = {}) => {
-  // Expect ts error here because of typescript mismatching Partial<TextField> with TextField
-  // @ts-expect-error
-  const colorSwatchField: TextField = {
+export const colorSwatchField = (overrides = {}) => {
+  const colorSwatchField = {
     name: "color",
     type: "text",
     index: true,
