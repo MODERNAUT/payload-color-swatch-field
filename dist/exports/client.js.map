@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/exports/client.ts"],"sourcesContent":["export { ColorSwatchComponent } from \"../fields/ColorSwatch/ColorSwatchComponent.js\";\n"],"names":["ColorSwatchComponent"],"mappings":"AAAA,SAASA,oBAAoB,QAAQ,gDAAgD"}

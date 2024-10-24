@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/exports/fields.ts"],"sourcesContent":["export { colorSwatchField } from \"../index.js\";\n"],"names":["colorSwatchField"],"mappings":"AAAA,SAASA,gBAAgB,QAAQ,cAAc"}

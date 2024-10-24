@@ -13,33 +13,34 @@ NOTE: At the time of writing this, you may experience package conflicts with Pay
 ## Usage
 
 ```js
-import type { CollectionConfig, UIField } from 'payload'
-import ColorSwatchField from '@modernaut/payload-color-swatch-field'
+import type { CollectionConfig } from "payload";
+import { colorSwatchField } from "@modernaut/payload-color-swatch-field";
 
 const Lorem: CollectionConfig = {
-  slug: 'lorem',
+  slug: "lorem",
   admin: {
-    useAsTitle: 'title',
+    useAsTitle: "title",
   },
   fields: [
     {
-      name: 'title',
-      type: 'text',
+      name: "title",
+      type: "text",
       required: true,
     },
     colorSwatchField({
-      label: 'dolor',
+      required: true,
       admin: {
         // ...
       },
-    }) as UIField,
+    }),
   ],
-}
+};
 
-export default Lorem
+export default Lorem;
 ```
 
 ## Credit
 
 - "Custom Color Picker" field article -- https://payloadcms.com/blog/building-a-custom-field
 - innovixx, Payload Color Picker Field -- https://github.com/innovixx
+- Payload SEO Plugin for Payload v3

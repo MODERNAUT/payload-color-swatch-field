@@ -13,7 +13,7 @@ import {
 import { TextFieldClientProps } from "payload";
 
 // Import the SCSS stylesheet
-import "./index.scss";
+import "../index.scss";
 
 // A list of default colors to choose from (TO DO: Pull from DB, env or tailwind)
 const defaultColors = [
@@ -31,9 +31,9 @@ const baseClass = "color-swatch-field";
 
 const preferenceKey = "color-swatch-colors";
 
-type ColorSwatchComponentProps = TextFieldClientProps;
+type ColorSwatchProps = TextFieldClientProps;
 
-export const ColorSwatchComponent: React.FC<ColorSwatchComponentProps> = ({
+export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
   field,
   // fieldToUse,
   // checkboxFieldPath: checkboxFieldPathFromProps,
@@ -130,7 +130,9 @@ export const ColorSwatchComponent: React.FC<ColorSwatchComponentProps> = ({
                 <button
                   type="button"
                   key={color ? color : "transparent"}
-                  className={`chip ${!color ? "no-color" : ""} ${color === value ? "chip--selected" : ""} chip--clickable`}
+                  className={`chip ${!color ? "no-color" : ""} ${
+                    color === value ? "chip--selected" : ""
+                  } chip--clickable`}
                   style={{ backgroundColor: color ? color : "white" }}
                   onClick={() => setValue(color)}
                 />

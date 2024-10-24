@@ -1,7 +1,9 @@
-build
-dist / media
 node_modules
-.DS_Store
 .env
+demo/uploads
+build
+.DS_Store
+package-lock.json
 .next
 .vercel
+.turbo
