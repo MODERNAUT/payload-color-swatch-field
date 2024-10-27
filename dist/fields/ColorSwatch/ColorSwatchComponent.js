@@ -1,67 +1,99 @@
 "use client";
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import React, { useEffect, useState, useCallback, Fragment } from "react";
 import { Button, FieldLabel, useField, useFieldProps, usePreferences } from "@payloadcms/ui";
-// Import the SCSS stylesheet
-import "../index.scss";
-// A list of default colors to choose from (TO DO: Pull from DB, env or tailwind)
-const defaultColors = [
-    null,
-    "#0F0F0F",
-    "#9A9A9A",
-    "#F3F3F3",
-    "#FF6F76",
-    "#FDFFA4",
-    "#B2FFD6",
-    "#F3DDF3"
-];
+import "../index.css";
 const baseClass = "color-swatch-field";
-const preferenceKey = "color-swatch-colors";
-export const ColorSwatchComponent = ({ field })=>{
+const isTailwindColor = (color, tailwindColorWhitelist)=>{
+    return color && // Check to ensure it isn't null
+    tailwindColorWhitelist.includes(color);
+};
+export const ColorSwatchComponent = ({ defaultColors, lockDefaultColors, allowNull, allowUserPreferences, useGlobalPreferences, allowTailwindColors, tailwindColorWhitelist, allowHexColors, field })=>{
     const { label } = field;
     const { path, readOnly: readOnlyFromProps } = useFieldProps();
     const { value = "", setValue } = useField({
         path
     });
+    const defaultPreferenceKey = useGlobalPreferences ? "default-color-swatch-colors" : field.name + "-default-color-swatch-colors";
+    const customPreferenceKey = useGlobalPreferences ? "custom-color-swatch-colors" : field.name + "-custom-color-swatch-colors";
     const { getPreference, setPreference } = usePreferences();
-    const [colorOptions, setColorOptions] = useState(defaultColors);
+    const [defaultColorOptions, setDefaultColorOptions] = useState([
+        allowNull && null,
+        ...defaultColors.filter((element)=>{
+            // Filter any user input to ensure they're proper values
+            return allowHexColors && element.startsWith("#") || // If hex value
+            allowTailwindColors && isTailwindColor(element, tailwindColorWhitelist) // If a tailwind color
+            ;
+        })
+    ]);
+    const [customColorOptions, setCustomColorOptions] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
     const [colorToAdd, setColorToAdd] = useState("");
+    const [selectedTailwindColor, setSelectedTailwindColor] = useState("");
     useEffect(()=>{
-        const mergeColorsFromPreferences = async ()=>{
-            const colorPreferences = await getPreference(preferenceKey);
-            if (colorPreferences && colorPreferences !== undefined && colorPreferences.length != 0) {
-                // Add some checking to ensure at least the default colors are presented
-                setColorOptions(colorPreferences);
-            }
-        };
-        mergeColorsFromPreferences();
-    }, [
-        getPreference,
-        setColorOptions
-    ]);
+        if (allowUserPreferences) {
+            // If custom colors are allowed, then get the user's color preferences
+            const getColorPreferences = async ()=>{
+                if (!lockDefaultColors) {
+                    const defaultColorPreferences = await getPreference(defaultPreferenceKey);
+                    if (defaultColorPreferences && defaultColorPreferences !== undefined && defaultColorPreferences.length != 0) {
+                        setDefaultColorOptions(defaultColorPreferences);
+                    }
+                }
+                const customColorPreferences = await getPreference(customPreferenceKey);
+                if (customColorPreferences && customColorPreferences !== undefined && customColorPreferences.length != 0) {
+                    setCustomColorOptions(customColorPreferences);
+                }
+            };
+            getColorPreferences();
+        }
+    }, []);
     const handleAddColor = useCallback(()=>{
+        // This can only run when 'allowUserPreferences' is true
         setIsAdding(false);
         setValue(colorToAdd);
-        // prevent adding duplicates
-        if (colorOptions.indexOf(colorToAdd) > -1) return;
+        // Prevent adding duplicates
+        if (customColorOptions.indexOf(colorToAdd) > -1) return;
         // Add the color
-        let newOptions = colorOptions;
+        let newOptions = customColorOptions;
         newOptions.push(colorToAdd);
-        // Resetting the options (debugging)
-        // let newOptions = []
-        // update state with new colors
-        setColorOptions(newOptions);
-        // store the user color preferences for future use
-        setPreference(preferenceKey, newOptions);
+        // Update state with new colors
+        setCustomColorOptions(newOptions);
+        // Store the user color preferences for future use
+        setPreference(customPreferenceKey, newOptions);
     }, [
-        colorOptions,
-        setPreference,
+        value,
         colorToAdd,
-        setIsAdding,
-        setValue
+        customColorOptions,
+        setPreference
     ]);
-    // TO DO: Implement a handleRemoveColor option
+    const handleRemoveColor = useCallback(()=>{
+        if (!lockDefaultColors && defaultColorOptions.includes(value)) {
+            // Remove the color
+            let newOptions = defaultColorOptions.filter((color)=>{
+                return color !== value;
+            });
+            // Update state with new colors
+            setDefaultColorOptions(newOptions);
+            // Store the user color preferences for future use
+            setPreference(defaultPreferenceKey, newOptions);
+        } else {
+            // Remove the color
+            let newOptions = customColorOptions.filter((color)=>{
+                return color !== value;
+            });
+            // Update state with new colors
+            setCustomColorOptions(newOptions);
+            // Store the user color preferences for future use
+            setPreference(customPreferenceKey, newOptions);
+        }
+        setValue("");
+    }, [
+        value,
+        defaultColorOptions,
+        customColorOptions,
+        setPreference
+    ]);
     return /*#__PURE__*/ _jsxs("div", {
         className: baseClass,
         children: [
@@ -72,13 +104,39 @@ export const ColorSwatchComponent = ({ field })=>{
             }),
             isAdding && /*#__PURE__*/ _jsxs("div", {
                 children: [
-                    /*#__PURE__*/ _jsx("input", {
+                    allowTailwindColors && /*#__PURE__*/ _jsxs(_Fragment, {
+                        children: [
+                            /*#__PURE__*/ _jsxs("select", {
+                                value: selectedTailwindColor,
+                                onChange: (e)=>{
+                                    setSelectedTailwindColor(e.target.value);
+                                    setColorToAdd(e.target.value);
+                                },
+                                children: [
+                                    /*#__PURE__*/ _jsx("option", {
+                                        value: "",
+                                        children: "Tailwind color"
+                                    }, "tailwind-colors-all"),
+                                    tailwindColorWhitelist.map((color, i)=>/*#__PURE__*/ _jsx("option", {
+                                            value: color,
+                                            children: color
+                                        }, "tailwind-colors-" + color + i))
+                                ]
+                            }),
+                            " "
+                        ]
+                    }),
+                    allowHexColors && /*#__PURE__*/ _jsx("input", {
                         className: `${baseClass}__input`,
                         type: "text",
                         placeholder: "#000000",
-                        onChange: (e)=>setColorToAdd(e.target.value),
+                        onChange: (e)=>{
+                            setSelectedTailwindColor("");
+                            setColorToAdd(e.target.value);
+                        },
                         value: colorToAdd
                     }),
+                    /*#__PURE__*/ _jsx("br", {}),
                     /*#__PURE__*/ _jsx(Button, {
                         className: `${baseClass}__btn`,
                         buttonStyle: "primary",
@@ -88,6 +146,7 @@ export const ColorSwatchComponent = ({ field })=>{
                         onClick: handleAddColor,
                         children: "Add"
                     }),
+                    " ",
                     /*#__PURE__*/ _jsx(Button, {
                         className: `${baseClass}__btn`,
                         buttonStyle: "secondary",
@@ -101,22 +160,41 @@ export const ColorSwatchComponent = ({ field })=>{
             }),
             !isAdding && /*#__PURE__*/ _jsxs(Fragment, {
                 children: [
-                    /*#__PURE__*/ _jsx("ul", {
+                    /*#__PURE__*/ _jsxs("ul", {
                         className: `${baseClass}__colors`,
-                        children: colorOptions.map((color, i)=>/*#__PURE__*/ _jsx("li", {
-                                children: /*#__PURE__*/ _jsx("button", {
-                                    type: "button",
-                                    className: `chip ${!color ? "no-color" : ""} ${color === value ? "chip--selected" : ""} chip--clickable`,
-                                    style: {
-                                        backgroundColor: color ? color : "white"
-                                    },
-                                    onClick: ()=>setValue(color)
-                                }, color ? color : "transparent")
-                            }, i))
+                        children: [
+                            defaultColorOptions.map((color, i)=>/*#__PURE__*/ _jsx("li", {
+                                    className: `${baseClass}__color-default`,
+                                    children: /*#__PURE__*/ _jsx("button", {
+                                        type: "button",
+                                        className: `chip ${!color ? "no-color" : ""} ${color === value ? "chip--selected" : ""} ${color && isTailwindColor(color, tailwindColorWhitelist) && "bg-" + color} chip--clickable`,
+                                        style: // Hex values should be inline background
+                                        {
+                                            backgroundColor: color && color.startsWith("#") && color
+                                        },
+                                        onClick: ()=>setValue(color),
+                                        title: color && color
+                                    }, color ? color : "transparent")
+                                }, "default-colors-" + color + i)),
+                            allowUserPreferences && customColorOptions && customColorOptions.map((color, i)=>/*#__PURE__*/ _jsx("li", {
+                                    className: `${baseClass}__color-custom`,
+                                    children: /*#__PURE__*/ _jsx("button", {
+                                        type: "button",
+                                        className: `chip ${!color ? "no-color" : ""} ${color === value ? "chip--selected" : ""} ${color && isTailwindColor(color, tailwindColorWhitelist) && "bg-" + color} chip--clickable`,
+                                        style: // Hex values should be inline background
+                                        {
+                                            backgroundColor: color && color.startsWith("#") && color
+                                        },
+                                        onClick: ()=>setValue(color),
+                                        title: color && color
+                                    }, color ? color : "transparent")
+                                }, "custom-colors-" + color + i))
+                        ]
                     }),
-                    /*#__PURE__*/ _jsx(Button, {
+                    allowUserPreferences && /*#__PURE__*/ _jsx(Button, {
                         className: "add-color",
                         icon: "plus",
+                        tooltip: "Add color",
                         buttonStyle: "icon-label",
                         iconPosition: "left",
                         iconStyle: "with-border",
@@ -124,6 +202,18 @@ export const ColorSwatchComponent = ({ field })=>{
                             setIsAdding(true);
                             setValue("");
                         }
+                    }),
+                    value && // Display remove color button
+                    allowUserPreferences && // If custom colors are allowed
+                    (lockDefaultColors && !defaultColors.includes(value) || // If value isn't in default colors, and default colors are locked
+                    !lockDefaultColors) && /*#__PURE__*/ _jsx(Button, {
+                        className: "remove-color",
+                        icon: "x",
+                        tooltip: "Remove color",
+                        buttonStyle: "icon-label",
+                        iconPosition: "left",
+                        iconStyle: "with-border",
+                        onClick: handleRemoveColor
                     })
                 ]
             })
