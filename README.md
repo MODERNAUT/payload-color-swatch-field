@@ -28,9 +28,16 @@ const Lorem: CollectionConfig = {
       required: true,
     },
     colorSwatchField({
-      required: true,
-      admin: {
-        // ...
+      defaultColors: ['#000000', '#777', '#ffffff', 'amber-500', 'teal-500', 'violet-500'],
+      lockDefaultColors: true,
+      allowNull: true,
+      allowUserPreferences: true,
+      useGlobalPreferences: true,
+      allowTailwindColors: true,
+      // tailwindColorWhitelist: ['amber-500', 'teal-500', 'violet-500', 'lime-700', 'sky-700'],
+      allowHexColors: true,
+      overrides: {
+        required: false,
       },
     }),
   ],
@@ -38,6 +45,21 @@ const Lorem: CollectionConfig = {
 
 export default Lorem;
 ```
+
+- `defaultColors`: Provide an array of color options (supports hex and Tailwind colors)
+- `lockDefaultColors`: Setting true ensures default color options can't be removed by users
+- `allowNull`: Adds a null option to default colors
+- `allowUserPreferences`: Enable to allow users to remove and add colors and build their own palette
+- `useGlobalPreferences`: Disabling this will allow custom user color options on a per-field basis
+- `allowTailwindColors`: Enable to allow Tailwind color options
+- `tailwindColorWhitelist`: Provide a list of Tailwind color options. By default, all Tailwind colors are allowed.
+- `allowHexColors`: Enable to allow hex colors
+- `overrides`: Any Payload field type overrides
+
+## TO DO
+
+- Cell support: Adding swatch styles to column sorting UI
+- Restricting hex options in the 'Add' prompt
 
 ## Credit
 
