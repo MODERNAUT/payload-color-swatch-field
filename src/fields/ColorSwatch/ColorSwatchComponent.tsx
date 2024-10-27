@@ -12,80 +12,152 @@ import {
 
 import { TextFieldClientProps } from "payload";
 
-// Import the SCSS stylesheet
-import "../index.scss";
-
-// A list of default colors to choose from (TO DO: Pull from DB, env or tailwind)
-const defaultColors = [
-  null,
-  "#0F0F0F",
-  "#9A9A9A",
-  "#F3F3F3",
-  "#FF6F76",
-  "#FDFFA4",
-  "#B2FFD6",
-  "#F3DDF3",
-];
+import "../index.css";
 
 const baseClass = "color-swatch-field";
 
-const preferenceKey = "color-swatch-colors";
+type ColorSwatchProps = {
+  readonly defaultColors: string[];
+  readonly lockDefaultColors: boolean;
+  readonly allowNull: boolean;
+  readonly allowUserPreferences: boolean;
+  readonly useGlobalPreferences: boolean;
+  readonly allowTailwindColors: boolean;
+  readonly tailwindColorWhitelist: string[];
+  readonly allowHexColors: boolean;
+} & TextFieldClientProps;
 
-type ColorSwatchProps = TextFieldClientProps;
+const isTailwindColor = (
+  color: string,
+  tailwindColorWhitelist: string[]
+): boolean => {
+  return (
+    color && // Check to ensure it isn't null
+    tailwindColorWhitelist.includes(color)
+  );
+};
 
 export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
+  defaultColors,
+  lockDefaultColors,
+  allowNull,
+  allowUserPreferences,
+  useGlobalPreferences,
+  allowTailwindColors,
+  tailwindColorWhitelist,
+  allowHexColors,
   field,
-  // fieldToUse,
-  // checkboxFieldPath: checkboxFieldPathFromProps,
 }) => {
   const { label } = field;
   const { path, readOnly: readOnlyFromProps } = useFieldProps();
 
-  const { value = "", setValue } = useField({
-    path,
-  });
+  const { value = "", setValue } = useField({ path });
+
+  const defaultPreferenceKey = useGlobalPreferences
+    ? "default-color-swatch-colors"
+    : field.name + "-default-color-swatch-colors";
+  const customPreferenceKey = useGlobalPreferences
+    ? "custom-color-swatch-colors"
+    : field.name + "-custom-color-swatch-colors";
 
   const { getPreference, setPreference } = usePreferences();
-  const [colorOptions, setColorOptions] = useState(defaultColors);
+
+  const [defaultColorOptions, setDefaultColorOptions] = useState([
+    allowNull && null, // default options will include an array of null (if configured)
+    ...defaultColors.filter((element: string) => {
+      // Filter any user input to ensure they're proper values
+      return (
+        (allowHexColors && element.startsWith("#")) || // If hex value
+        (allowTailwindColors &&
+          isTailwindColor(element, tailwindColorWhitelist)) // If a tailwind color
+      );
+    }),
+  ]);
+  const [customColorOptions, setCustomColorOptions] = useState([]);
+
   const [isAdding, setIsAdding] = useState(false);
   const [colorToAdd, setColorToAdd] = useState("");
+  const [selectedTailwindColor, setSelectedTailwindColor] = useState("");
 
   useEffect(() => {
-    const mergeColorsFromPreferences = async () => {
-      const colorPreferences = await getPreference<string[]>(preferenceKey);
-      if (
-        colorPreferences &&
-        colorPreferences !== undefined &&
-        colorPreferences.length != 0
-      ) {
-        // Add some checking to ensure at least the default colors are presented
-        setColorOptions(colorPreferences);
-      }
-    };
-    mergeColorsFromPreferences();
-  }, [getPreference, setColorOptions]);
+    if (allowUserPreferences) {
+      // If custom colors are allowed, then get the user's color preferences
+      const getColorPreferences = async () => {
+        if (!lockDefaultColors) {
+          const defaultColorPreferences =
+            await getPreference<string[]>(defaultPreferenceKey);
+
+          if (
+            defaultColorPreferences &&
+            defaultColorPreferences !== undefined &&
+            defaultColorPreferences.length != 0
+          ) {
+            setDefaultColorOptions(defaultColorPreferences);
+          }
+        }
+
+        const customColorPreferences =
+          await getPreference<string[]>(customPreferenceKey);
+
+        if (
+          customColorPreferences &&
+          customColorPreferences !== undefined &&
+          customColorPreferences.length != 0
+        ) {
+          setCustomColorOptions(customColorPreferences);
+        }
+      };
+
+      getColorPreferences();
+    }
+  }, []);
 
   const handleAddColor = useCallback(() => {
+    // This can only run when 'allowUserPreferences' is true
     setIsAdding(false);
     setValue(colorToAdd);
 
-    // prevent adding duplicates
-    if (colorOptions.indexOf(colorToAdd) > -1) return;
+    // Prevent adding duplicates
+    if (customColorOptions.indexOf(colorToAdd) > -1) return;
 
     // Add the color
-    let newOptions = colorOptions;
+    let newOptions = customColorOptions;
     newOptions.push(colorToAdd);
 
-    // Resetting the options (debugging)
-    // let newOptions = []
+    // Update state with new colors
+    setCustomColorOptions(newOptions);
 
-    // update state with new colors
-    setColorOptions(newOptions);
-    // store the user color preferences for future use
-    setPreference(preferenceKey, newOptions);
-  }, [colorOptions, setPreference, colorToAdd, setIsAdding, setValue]);
+    // Store the user color preferences for future use
+    setPreference(customPreferenceKey, newOptions);
+  }, [value, colorToAdd, customColorOptions, setPreference]);
 
-  // TO DO: Implement a handleRemoveColor option
+  const handleRemoveColor = useCallback(() => {
+    if (!lockDefaultColors && defaultColorOptions.includes(value as string)) {
+      // Remove the color
+      let newOptions = defaultColorOptions.filter((color) => {
+        return color !== value;
+      });
+
+      // Update state with new colors
+      setDefaultColorOptions(newOptions);
+
+      // Store the user color preferences for future use
+      setPreference(defaultPreferenceKey, newOptions);
+    } else {
+      // Remove the color
+      let newOptions = customColorOptions.filter((color) => {
+        return color !== value;
+      });
+
+      // Update state with new colors
+      setCustomColorOptions(newOptions);
+
+      // Store the user color preferences for future use
+      setPreference(customPreferenceKey, newOptions);
+    }
+
+    setValue("");
+  }, [value, defaultColorOptions, customColorOptions, setPreference]);
 
   return (
     <div className={baseClass}>
@@ -93,13 +165,40 @@ export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
 
       {isAdding && (
         <div>
-          <input
-            className={`${baseClass}__input`}
-            type="text"
-            placeholder="#000000"
-            onChange={(e) => setColorToAdd(e.target.value)}
-            value={colorToAdd}
-          />
+          {allowTailwindColors && (
+            <>
+              <select
+                value={selectedTailwindColor}
+                onChange={(e) => {
+                  setSelectedTailwindColor(e.target.value);
+                  setColorToAdd(e.target.value);
+                }}
+              >
+                <option value="" key="tailwind-colors-all">
+                  Tailwind color
+                </option>
+                {tailwindColorWhitelist.map((color, i) => (
+                  <option value={color} key={"tailwind-colors-" + color + i}>
+                    {color}
+                  </option>
+                ))}
+              </select>
+              &nbsp;
+            </>
+          )}
+          {allowHexColors && (
+            <input
+              className={`${baseClass}__input`}
+              type="text"
+              placeholder="#000000"
+              onChange={(e) => {
+                setSelectedTailwindColor("");
+                setColorToAdd(e.target.value);
+              }}
+              value={colorToAdd}
+            />
+          )}
+          <br />
           <Button
             className={`${baseClass}__btn`}
             buttonStyle="primary"
@@ -110,6 +209,7 @@ export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
           >
             Add
           </Button>
+          &nbsp;
           <Button
             className={`${baseClass}__btn`}
             buttonStyle="secondary"
@@ -125,31 +225,90 @@ export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
       {!isAdding && (
         <Fragment>
           <ul className={`${baseClass}__colors`}>
-            {colorOptions.map((color, i) => (
-              <li key={i}>
+            {defaultColorOptions.map((color, i) => (
+              <li
+                key={"default-colors-" + color + i}
+                className={`${baseClass}__color-default`}
+              >
                 <button
                   type="button"
                   key={color ? color : "transparent"}
                   className={`chip ${!color ? "no-color" : ""} ${
                     color === value ? "chip--selected" : ""
+                  } ${
+                    color &&
+                    isTailwindColor(color, tailwindColorWhitelist) &&
+                    "bg-" + color
                   } chip--clickable`}
-                  style={{ backgroundColor: color ? color : "white" }}
+                  style={
+                    // Hex values should be inline background
+                    {
+                      backgroundColor: color && color.startsWith("#") && color,
+                    }
+                  }
                   onClick={() => setValue(color)}
+                  title={color && color}
                 />
               </li>
             ))}
+            {allowUserPreferences &&
+              customColorOptions &&
+              customColorOptions.map((color, i) => (
+                <li
+                  key={"custom-colors-" + color + i}
+                  className={`${baseClass}__color-custom`}
+                >
+                  <button
+                    type="button"
+                    key={color ? color : "transparent"}
+                    className={`chip ${!color ? "no-color" : ""} ${
+                      color === value ? "chip--selected" : ""
+                    } ${
+                      color &&
+                      isTailwindColor(color, tailwindColorWhitelist) &&
+                      "bg-" + color
+                    } chip--clickable`}
+                    style={
+                      // Hex values should be inline background
+                      {
+                        backgroundColor:
+                          color && color.startsWith("#") && color,
+                      }
+                    }
+                    onClick={() => setValue(color)}
+                    title={color && color}
+                  />
+                </li>
+              ))}
           </ul>
-          <Button
-            className="add-color"
-            icon="plus"
-            buttonStyle="icon-label"
-            iconPosition="left"
-            iconStyle="with-border"
-            onClick={() => {
-              setIsAdding(true);
-              setValue("");
-            }}
-          />
+          {allowUserPreferences && (
+            <Button
+              className="add-color"
+              icon="plus"
+              tooltip="Add color"
+              buttonStyle="icon-label"
+              iconPosition="left"
+              iconStyle="with-border"
+              onClick={() => {
+                setIsAdding(true);
+                setValue("");
+              }}
+            />
+          )}
+          {value && // Display remove color button
+            allowUserPreferences && // If custom colors are allowed
+            ((lockDefaultColors && !defaultColors.includes(value as string)) || // If value isn't in default colors, and default colors are locked
+              !lockDefaultColors) && (
+              <Button
+                className="remove-color"
+                icon="x"
+                tooltip="Remove color"
+                buttonStyle="icon-label"
+                iconPosition="left"
+                iconStyle="with-border"
+                onClick={handleRemoveColor}
+              />
+            )}
         </Fragment>
       )}
     </div>

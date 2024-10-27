@@ -29,11 +29,6 @@
         "name": "next"
       }
     ],
-    "paths": {
-			// "payload-color-swatch-field/client": [
-      //   "./packages/plugin-seo/src/exports/client.ts"
-      // ]
-    },
 		"composite": true, // Make sure typescript knows that this module depends on their references
     "noEmit": false /* Do not emit outputs. */,
     "emitDeclarationOnly": true,
