@@ -1,5 +1,6 @@
 import React from "react";
 import { TextFieldClientProps } from "payload";
+import "../styles-tailwind.css";
 import "../index.css";
 type ColorSwatchProps = {
     readonly defaultColors: string[];

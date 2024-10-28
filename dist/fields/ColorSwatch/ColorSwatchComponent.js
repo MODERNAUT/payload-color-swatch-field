@@ -2,6 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import React, { useEffect, useState, useCallback, Fragment } from "react";
 import { Button, FieldLabel, useField, useFieldProps, usePreferences } from "@payloadcms/ui";
+import "../styles-tailwind.css"; // TO DO: Only load this if tailwind is enabled?
 import "../index.css";
 const baseClass = "color-swatch-field";
 const isTailwindColor = (color, tailwindColorWhitelist)=>{
@@ -119,8 +120,9 @@ export const ColorSwatchComponent = ({ defaultColors, lockDefaultColors, allowNu
                                     }, "tailwind-colors-all"),
                                     tailwindColorWhitelist.map((color, i)=>/*#__PURE__*/ _jsx("option", {
                                             value: color,
+                                            className: color,
                                             children: color
-                                        }, "tailwind-colors-" + color + i))
+                                        }, i))
                                 ]
                             }),
                             " "
@@ -167,28 +169,38 @@ export const ColorSwatchComponent = ({ defaultColors, lockDefaultColors, allowNu
                                     className: `${baseClass}__color-default`,
                                     children: /*#__PURE__*/ _jsx("button", {
                                         type: "button",
-                                        className: `chip ${!color ? "no-color" : ""} ${color === value ? "chip--selected" : ""} ${color && isTailwindColor(color, tailwindColorWhitelist) && "bg-" + color} chip--clickable`,
+                                        className: `chip ${!color ? "no-color" : ""} ${color === value ? "chip--selected" : ""} ${color && isTailwindColor(color, tailwindColorWhitelist) && color} chip--clickable`,
                                         style: // Hex values should be inline background
                                         {
                                             backgroundColor: color && color.startsWith("#") && color
                                         },
                                         onClick: ()=>setValue(color),
-                                        title: color && color
+                                        title: color && color,
+                                        children: color && !color.startsWith("#") && String.fromCharCode(65 + i) + String.fromCharCode(97 + i) // Generate Alphanumeric text
                                     }, color ? color : "transparent")
-                                }, "default-colors-" + color + i)),
-                            allowUserPreferences && customColorOptions && customColorOptions.map((color, i)=>/*#__PURE__*/ _jsx("li", {
-                                    className: `${baseClass}__color-custom`,
-                                    children: /*#__PURE__*/ _jsx("button", {
-                                        type: "button",
-                                        className: `chip ${!color ? "no-color" : ""} ${color === value ? "chip--selected" : ""} ${color && isTailwindColor(color, tailwindColorWhitelist) && "bg-" + color} chip--clickable`,
-                                        style: // Hex values should be inline background
-                                        {
-                                            backgroundColor: color && color.startsWith("#") && color
-                                        },
-                                        onClick: ()=>setValue(color),
-                                        title: color && color
-                                    }, color ? color : "transparent")
-                                }, "custom-colors-" + color + i))
+                                }, i)),
+                            allowUserPreferences && customColorOptions.length > 0 && /*#__PURE__*/ _jsxs(_Fragment, {
+                                children: [
+                                    /*#__PURE__*/ _jsx("li", {
+                                        className: `${baseClass}__color-custom-separator`
+                                    }),
+                                    customColorOptions.map((color, i)=>/*#__PURE__*/ _jsx("li", {
+                                            className: `${baseClass}__color-custom`,
+                                            children: /*#__PURE__*/ _jsx("button", {
+                                                type: "button",
+                                                className: `chip ${!color ? "no-color" : ""} ${color === value ? "chip--selected" : ""} ${color && isTailwindColor(color, tailwindColorWhitelist) && color} chip--clickable`,
+                                                style: // Hex values should be inline background
+                                                {
+                                                    backgroundColor: color && color.startsWith("#") && color
+                                                },
+                                                onClick: ()=>setValue(color),
+                                                title: color && color,
+                                                children: color && !color.startsWith("#") && String.fromCharCode(// Generate Alphanumeric text
+                                                65 + i + defaultColorOptions.length + 1) + String.fromCharCode(97 + i + defaultColorOptions.length + 1)
+                                            }, color ? color : "transparent")
+                                        }, i))
+                                ]
+                            })
                         ]
                     }),
                     allowUserPreferences && /*#__PURE__*/ _jsx(Button, {
