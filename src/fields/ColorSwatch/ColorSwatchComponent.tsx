@@ -12,6 +12,7 @@ import {
 
 import { TextFieldClientProps } from "payload";
 
+import "../styles-tailwind.css"; // TO DO: Only load this if tailwind is enabled?
 import "../index.css";
 
 const baseClass = "color-swatch-field";
@@ -178,7 +179,7 @@ export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
                   Tailwind color
                 </option>
                 {tailwindColorWhitelist.map((color, i) => (
-                  <option value={color} key={"tailwind-colors-" + color + i}>
+                  <option value={color} key={i} className={color}>
                     {color}
                   </option>
                 ))}
@@ -226,10 +227,7 @@ export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
         <Fragment>
           <ul className={`${baseClass}__colors`}>
             {defaultColorOptions.map((color, i) => (
-              <li
-                key={"default-colors-" + color + i}
-                className={`${baseClass}__color-default`}
-              >
+              <li key={i} className={`${baseClass}__color-default`}>
                 <button
                   type="button"
                   key={color ? color : "transparent"}
@@ -238,7 +236,7 @@ export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
                   } ${
                     color &&
                     isTailwindColor(color, tailwindColorWhitelist) &&
-                    "bg-" + color
+                    color
                   } chip--clickable`}
                   style={
                     // Hex values should be inline background
@@ -248,38 +246,54 @@ export const ColorSwatchComponent: React.FC<ColorSwatchProps> = ({
                   }
                   onClick={() => setValue(color)}
                   title={color && color}
-                />
+                >
+                  {
+                    color &&
+                      !color.startsWith("#") &&
+                      String.fromCharCode(65 + i) + String.fromCharCode(97 + i) // Generate Alphanumeric text
+                  }
+                </button>
               </li>
             ))}
-            {allowUserPreferences &&
-              customColorOptions &&
-              customColorOptions.map((color, i) => (
-                <li
-                  key={"custom-colors-" + color + i}
-                  className={`${baseClass}__color-custom`}
-                >
-                  <button
-                    type="button"
-                    key={color ? color : "transparent"}
-                    className={`chip ${!color ? "no-color" : ""} ${
-                      color === value ? "chip--selected" : ""
-                    } ${
-                      color &&
-                      isTailwindColor(color, tailwindColorWhitelist) &&
-                      "bg-" + color
-                    } chip--clickable`}
-                    style={
-                      // Hex values should be inline background
-                      {
-                        backgroundColor:
-                          color && color.startsWith("#") && color,
+            {allowUserPreferences && customColorOptions.length > 0 && (
+              <>
+                <li className={`${baseClass}__color-custom-separator`}></li>
+                {customColorOptions.map((color, i) => (
+                  <li key={i} className={`${baseClass}__color-custom`}>
+                    <button
+                      type="button"
+                      key={color ? color : "transparent"}
+                      className={`chip ${!color ? "no-color" : ""} ${
+                        color === value ? "chip--selected" : ""
+                      } ${
+                        color &&
+                        isTailwindColor(color, tailwindColorWhitelist) &&
+                        color
+                      } chip--clickable`}
+                      style={
+                        // Hex values should be inline background
+                        {
+                          backgroundColor:
+                            color && color.startsWith("#") && color,
+                        }
                       }
-                    }
-                    onClick={() => setValue(color)}
-                    title={color && color}
-                  />
-                </li>
-              ))}
+                      onClick={() => setValue(color)}
+                      title={color && color}
+                    >
+                      {color &&
+                        !color.startsWith("#") &&
+                        String.fromCharCode(
+                          // Generate Alphanumeric text
+                          65 + i + defaultColorOptions.length + 1
+                        ) +
+                          String.fromCharCode(
+                            97 + i + defaultColorOptions.length + 1
+                          )}
+                    </button>
+                  </li>
+                ))}
+              </>
+            )}
           </ul>
           {allowUserPreferences && (
             <Button

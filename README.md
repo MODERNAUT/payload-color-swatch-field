@@ -28,7 +28,7 @@ const Lorem: CollectionConfig = {
       required: true,
     },
     colorSwatchField({
-      defaultColors: ['#000000', '#777', '#ffffff', 'amber-500', 'teal-500', 'violet-500'],
+      defaultColors: ['#000000', '#777', '#ffffff', 'bg-amber-500', 'bg-teal-500', 'bg-violet-500', 'text-amber-700', 'text-teal-700', 'text-violet-700'],
       overrides: {
         required: true,
       },
@@ -47,13 +47,14 @@ export default Lorem;
 - `allowUserPreferences`: Enable to allow users to remove and add colors and build their own palette (_default: true_)
 - `useGlobalPreferences`: Disabling this will allow custom user color options on a per-field basis (_default: true_)
 - `allowTailwindColors`: Enable to allow Tailwind color options (_default: true_)
-- `tailwindColorWhitelist`: Provide a list of Tailwind color options. (_default: all Tailwind colors are allowed_)
+- `tailwindColorWhitelist`: Provide a list of Tailwind color options. NOTE: You must specify the full color class (e.g. 'text-amber-700' vs 'amber-500') in order for Tailwind to detect/generate the proper colors in its CSS. Otherwise, you'll need to safelist the full class in your tailwind config file. See https://tailwindcss.com/docs/content-configuration#safelisting-classes for more details (_default: all bg and text Tailwind colors are allowed_)
 - `allowHexColors`: Enable to allow hex colors (_default: true_)
 - `overrides`: Any Payload field type overrides
 
 ## To Do
 
 - Special color options: Gradients, transparency etc.
+- Programmatically loading tailwind utilities vs hardcoded tailwind css
 - Cell support: Adding swatch styles to column sorting UI
 - Restricting hex options in the 'Add' prompt
 
